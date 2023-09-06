@@ -9,17 +9,42 @@ import "./index.css";
 
 const BASE_URL = "https://api.themoviedb.org/3";
 const TOKEN =
-  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MDRhZDg0YTEzODRkMDRjNGY0YWVlMzZmNGE5YjE0OCIsInN1YiI6IjVlZWUwOTAwYjA0NjA1MDAzNDBlOTg2MyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.H7gQK0dgqOvsQmsHsgtOmsqKVFmnb1urXF3q9AkqyCE";
+  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmMmUwZGJhMWE1MDVjMjYyMTczZmJhMTNkODE5MmY3MyIsInN1YiI6IjY0ZjgxODE2OGUyMGM1MGNkNTBjMzg5NiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.P7RDBZKXQUi_fGcnv3WP4nnjWe8L6Kkku2jH4Eb98sc";
 
 function App() {
   const [keyword, setKeyword] = useState("");
   const [movieLists, setMovieLists] = useState([]);
   const [totalPage, setTotalPage] = useState(0);
 
+  const handleClick = async (event) => {
+    event.preventDefault();
+    setTotalPage(event.target.value);
+    let url = `${BASE_URL}/search/keyword?query=${keyword}&page=${
+      totalPage || 1
+    }`;
+    let option = {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    };
+    try {
+      const response = await fetch(url, option);
+      const data = await response.json();
+      setMovieLists(data.results);
+      setTotalPage(data.total_pages);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    let url = `${BASE_URL}/search/keyword?query=${keyword}&page=1`;
+    let url = `${BASE_URL}/search/keyword?query=${keyword}&page=${
+      totalPage || 1
+    }`;
     let option = {
       method: "GET",
       headers: {
@@ -56,7 +81,9 @@ function App() {
 
       <div>
         {Array.from(Array(totalPage).keys()).map((n) => (
-          <button>{n + 1}</button>
+          <button key={n + 1} onClick={handleClick}>
+            {n + 1}
+          </button>
         ))}
       </div>
 
