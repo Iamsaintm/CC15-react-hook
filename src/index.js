@@ -1,25 +1,72 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 
+// step-1 : เก็บ Input จาก User => React State
+// step-2 : handle จังหวะ submit
+// step-3 : Make HTTP Request => Get Data
+// step-4 : เอา Data มาแสดงผล (เก็บเป็น React State)
+
+const BASE_URL = "https://api.themoviedb.org/3";
+const TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MDRhZDg0YTEzODRkMDRjNGY0YWVlMzZmNGE5YjE0OCIsInN1YiI6IjVlZWUwOTAwYjA0NjA1MDAzNDBlOTg2MyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.H7gQK0dgqOvsQmsHsgtOmsqKVFmnb1urXF3q9AkqyCE";
+
 function App() {
+  const [keyword, setKeyword] = useState("");
+  const [movieLists, setMovieLists] = useState([]);
+  const [totalPage, setTotalPage] = useState(0);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    let url = `${BASE_URL}/search/keyword?query=${keyword}&page=1`;
+    let option = {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    };
+    try {
+      const response = await fetch(url, option);
+      const data = await response.json();
+      setMovieLists(data.results);
+      setTotalPage(data.total_pages);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="App">
-      {/* Header */}
+      {/* Heder */}
       <div className="header">
-        <h1>Movie App</h1>
+        <h1>Movie Search</h1>
       </div>
 
       {/* Input */}
-      <div className="search">
-        <input type="text" placeholder="keyword ?" />
-        <button>search</button>
+      <form className="search" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="keyword ?"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+        <button type="submit">search</button>
+      </form>
+
+      <div>
+        {Array.from(Array(totalPage).keys()).map((n) => (
+          <button>{n + 1}</button>
+        ))}
       </div>
 
       {/* Result */}
       <div className="movie-lists">
-        <div className="movie">Movie-1</div>
-        <div className="movie">Movie-2</div>
+        {movieLists.map((movie) => (
+          <div key={movie.id} className="movie">
+            {movie.name}
+          </div>
+        ))}
       </div>
     </div>
   );
